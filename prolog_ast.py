@@ -19,9 +19,8 @@ def ast_kv(name, value, comment=None):
     return ['kv', name, value, comment]
 
 
-def ast_module(name, ports, locals, module_instances, extra=[], comment=None):
-    return ['module', name, ports, locals, module_instances, extra, comment]
-
+def ast_module(name, ports, locals, module_instances, extra=None, comment=None):
+    return ['module', name, ports, locals, module_instances, extra if extra else [], comment]
 
 
 
