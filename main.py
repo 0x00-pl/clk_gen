@@ -1,5 +1,7 @@
 import yaml
 import textwrap
+
+import build_ast
 import prolog_ast
 import templates.default_templates
 
@@ -53,5 +55,11 @@ def main2():
     print(txt)
 
 
+def main3():
+    dat = load_yml('clk_gen.yml')
+    prob = build_ast.ProbClkGen()
+    prob.visit(dat)
+
+
 if __name__ == '__main__':
-    main()
+    main3()
