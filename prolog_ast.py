@@ -1,6 +1,5 @@
-
-def ast_extra(text):
-    return ['extra', text]
+def ast_extra(*content):
+    return ['extra', *content]
 
 
 def ast_port_decl(direction: str, ty='wire', bw:int=1, name: str='noName', comment=None):
@@ -12,13 +11,13 @@ def ast_local_decl(ty='wire', bw:int=1, name: str='noName', comment=None):
 
 
 def ast_module_instance(ty, args, name, ports_output, ports_input, comment=None):
-    def kv_or_comment(line):
-        if len(line) >= 3:
-            return ast_kv(line[0], line[1], (line[2] if len(line)>2 else None))
-        else:
-            return [line]
-
-    return ['module_instance', ty, [ast_kv(k, v) for k, v in args], name, ports_input, ports_output, comment]
+    return [
+        'module_instance',
+        ty, [ast_kv(k, v) for k, v in args], name,
+        [ast_kv(*item) for item in ports_output],
+        [ast_kv(*item) for item in ports_input],
+        comment
+    ]
 
 
 def ast_kv(name, value, comment=None):

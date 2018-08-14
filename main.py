@@ -13,56 +13,14 @@ def load_yml(filename):
 
 def main():
     dat = load_yml('clk_gen.yml')
-    s = dat['Top'][3]['description']
-    l = textwrap.wrap(s, 40)
-    return 0
+    prob = build_ast.ProbClkGen()
+    prob.visit(dat)
+    prob.fix_missing_ports()
 
-
-def main2():
-    mi = prolog_ast.ast_module_instance(
-        'Mod1',
-        [
-            prolog_ast.ast_kv('arg1', 'value1'),
-            prolog_ast.ast_kv('arg2', 'value2')
-        ],
-        'mod_ins_1',
-        [
-            prolog_ast.ast_kv('clk', 'pll_0_clk', '26M clk')
-        ],
-        [
-            prolog_ast.ast_kv('switch', 'pll_switchers[2:0]')
-        ],
-        'some comment for mod instance'
-    )
-    m = prolog_ast.ast_module(
-        'clk_gen_main',
-        [
-            prolog_ast.ast_port_decl('input', 'wire', 1, 'clk_26m', 'main input clk'),
-            prolog_ast.ast_port_decl('input', 'wire', 10, 'clk_switcher')
-        ],
-        [
-            prolog_ast.ast_local_decl('wire', 1, 'sys_src0_clk', 'temp clk 0'),
-            prolog_ast.ast_local_decl('wire', 1, 'sys_src100_clk', 'temp clk 100'),
-        ],
-        [mi],
-        [],
-        'comment of clk_gen_main'
-    )
-    tpl = templates.default_templates.template_module(
-        *m
-    )
-
+    tpl = templates.default_templates.template_file(prob.top, prob.get_module_ast())
     txt = templates.default_templates.template_tostring(tpl)
-
     print(txt)
 
 
-def main3():
-    dat = load_yml('clk_gen.yml')
-    prob = build_ast.ProbClkGen()
-    prob.visit(dat)
-    pass
-
-
 if __name__ == '__main__':
-    main3()
+    main()

@@ -63,11 +63,27 @@ class ProbClkGen(ClkGenVisitorBase):
             self.extra.append(module_instances)
         elif module_instances[0][0] == 'module_instance':
             self.module_instance_list.extend(module_instances)
+            for mi in module_instances:
+                ast, ty, args, name, ports_output, ports_input, comment = mi
+                for port_kv in ports_output:
+                    ast, k, v, p_comment = port_kv
+                    bw = 1
+                    if v.find('[') == -1:
+                        name = v
+                    else:
+                        name, bw_ref_1 = v.split('[')
+                        shi, slo = bw_ref_1[:-1].split(':')
+                        bw = int(shi) - int(slo) + 1
+
+                    if not self.exist_in_ports_and_locals(v):
+                        loc = prolog_ast.ast_local_decl('wire', bw, name, p_comment)
+                        self.local_list.append(loc)
 
         self.fix_module_instances_output_port(name, mode, comment)
 
     def fix_module_instances_output_port(self, name, mode, comment):
         direction = mode.get('direction', 'node')
+        name = name+'_o' if direction == 'output' else name
         ty = mode.get('type', 'wire')
         bw = mode.get('DIV_BW', '1')
         if direction == 'output':
@@ -77,10 +93,37 @@ class ProbClkGen(ClkGenVisitorBase):
             loc = prolog_ast.ast_local_decl(ty, bw, name, comment)
             self.local_list.append(loc)
 
+    def exist_in_ports_and_locals(self, target_name):
+        for item in self.port_list:
+            ast, direction, ty, bw, name, comment = item
+            if name == target_name:
+                return True
+
+        for item in self.local_list:
+            ast, ty, bw, name, comment = item
+            if name == target_name:
+                return True
+
+        return False
+
     def fix_missing_ports(self):
         for modins in self.module_instance_list:
-            ast, ty, params, name, ports, comment = modins
+            ast, ty, params, name, port_output, port_input, m_comment = modins
             assert(ast == 'module_instance')
+            for port_i in port_input:
+                ast, k, v, p_comment = port_i
+                bw = 1
+                if v.find('[') == -1:
+                    name = v
+                else:
+                    name, bw_ref_1 = v.split('[')
+                    shi, slo = bw_ref_1[:-1].split(':')
+                    bw = int(shi) - int(slo) + 1
 
+                if not self.exist_in_ports_and_locals(v):
+                    port = prolog_ast.ast_port_decl('input', 'wire', bw, name, p_comment)
+                    self.port_list.append(port)
 
+    def get_module_ast(self):
+        return prolog_ast.ast_module(self.name, self.port_list, self.local_list, self.module_instance_list, self.extra, self.comment)
 

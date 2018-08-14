@@ -6,9 +6,8 @@ def make_clk2_swi(name, mode, source, cell_pack, comment):
     pin = cell_pack.get('Pin', {})
     assert(cell_pack['Cell'] == 'clk2_swi')
     direction = mode.get('direction', 'node')
-    name = name + '_o' if direction == 'output' else name
     port_output = [
-        ['clkout', pin.get('clkout', name)]
+        ['clkout', pin.get('clkout', name+'_o' if direction == 'output' else name)]
     ]
     port_input = [
         ['src0_clki', pin.get('src0_clki', source[0])],
@@ -26,9 +25,8 @@ def make_clk3_swi(name, mode, source, cell_pack, comment):
     pin = cell_pack.get('Pin', {})
     assert(cell_pack['Cell'] == 'clk3_swi')
     direction = mode.get('direction', 'node')
-    name = name + '_o' if direction == 'output' else name
     port_output = [
-        ['clkout', pin.get('clkout', name)]
+        ['clkout', pin.get('clkout', name+'_o' if direction == 'output' else name)]
     ]
     port_input = [
         ['src0_clki', pin.get('src0_clki', source[0])],
@@ -48,9 +46,8 @@ def make_clk4_swi(name, mode, source, cell_pack, comment):
     pin = cell_pack.get('Pin', {})
     assert(cell_pack['Cell'] == 'clk4_swi')
     direction = mode.get('direction', 'node')
-    name = name + '_o' if direction == 'output' else name
     port_output = [
-        ['clkout', pin.get('clkout', name)]
+        ['clkout', pin.get('clkout', name+'_o' if direction == 'output' else name)]
     ]
     port_input = [
         ['src0_clki', pin.get('src0_clki', source[0])],
@@ -72,10 +69,9 @@ def make_clk_div(name, mode, source, cell_pack, comment):
     pin = cell_pack.get('Pin', {})
     assert(cell_pack['Cell'] == 'clk_div')
     direction = mode.get('direction', 'node')
-    name = name + '_o' if direction == 'output' else name
     div_bw = int(param['DIV_BW'])
     port_output = [
-        ['clkout', pin.get('clkout', name)]
+        ['clkout', pin.get('clkout', name+'_o' if direction == 'output' else name)]
     ]
     port_input = [
         ['clkin', pin.get('clkin', source[0])],
@@ -94,10 +90,9 @@ def make_gate_div(name, mode, source, cell_pack, comment):
     pin = cell_pack.get('Pin', {})
     assert(cell_pack['Cell'] == 'gate_div')
     direction = mode.get('direction', 'node')
-    name = name + '_o' if direction == 'output' else name
     div_bw = int(param['DIV_BW'])
     port_output = [
-        ['clkout', pin.get('clkout', name)]
+        ['clkout', pin.get('clkout', name+'_o' if direction == 'output' else name)]
     ]
     port_input = [
         ['clkin', pin.get('clkin', source[0])],
@@ -115,9 +110,8 @@ def make_clk_gate(name, mode, source, cell_pack, comment):
     pin = cell_pack.get('Pin', {})
     assert(cell_pack['Cell'] == 'clk_gate')
     direction = mode.get('direction', 'node')
-    name = name + '_o' if direction == 'output' else name
     port_output = [
-        ['clkout', pin.get('clkout', name)]
+        ['clkout', pin.get('clkout', name+'_o' if direction == 'output' else name)]
     ]
     port_input = [
         ['clkin', pin.get('clkin', source[0])],
@@ -134,11 +128,10 @@ def make_baud_div(name, mode, source, cell_pack, comment):
     pin = cell_pack.get('Pin', {})
     assert(cell_pack['Cell'] == 'baud_div')
     direction = mode.get('direction', 'node')
-    name = name + '_o' if direction == 'output' else name
     sum_bw = int(param['SUM_BW'])
     step_bw = int(param['STEP_BW'])
     port_output = [
-        ['clkout', pin.get('clkout', name)]
+        ['clkout', pin.get('clkout', name+'_o' if direction == 'output' else name)]
     ]
     port_input = [
         ['clkin', pin.get('clkin', source[0])],
@@ -153,7 +146,8 @@ def make_baud_div(name, mode, source, cell_pack, comment):
 
 def make_assign(name, mode, source, cell_pack, comment):
     assert(cell_pack['Cell'] == 'assign')
-    return prolog_ast.ast_extra(['assign', name, '=', source[0], ';'])
+    direction = mode.get('direction', 'node')
+    return prolog_ast.ast_extra('assign', name+'_o' if direction == 'output' else name, '=', source[0], ';')
 
 
 f_clk_module_dict = {
@@ -179,15 +173,17 @@ def make_clk_module_instance(name, mode, source, clk_cell, comment):
             cell = cell_pack['Cell']
 
             mid_mode = dict(mode)
+            name_n = name
             if i != len(clk_cell)-1:
                 mid_mode['direction'] = 'node'
+                name_n = name+'_net'+str(i)
 
             mid_source = list(source)
             if i != 0:
                 mid_source = [name+'_net'+str(i-1)]
 
             f_cell_module_instance = f_clk_module_dict[cell]
-            mi = f_cell_module_instance(name+'_net'+str(i), mid_mode, mid_source, cell_pack, comment)
+            mi = f_cell_module_instance(name_n, mid_mode, mid_source, cell_pack, comment)
             ret.append(mi)
 
         return ret
