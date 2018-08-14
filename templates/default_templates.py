@@ -75,13 +75,15 @@ def template_local_decl(ast, ty:str='wire', bw:int=1, name: str='noName', commen
     return [ty, name+',', '// '+comment] if comment else [ty, name+',']
 
 
-def template_module_instance(ast, ty, args, name, ports, comment=None):
+def template_module_instance(ast, ty, args, name, port_output_list, port_input_list, comment=None):
     assert(ast == 'module_instance')
     ret = [['// '+comment]] if comment else []
     module_instance_arguments = '#('+', '.join(template_kv_inline(args))+')'
     ret.append([ty, module_instance_arguments, name])
     ret.append(['('])
-    module_instance_ports = template_kv(ports)
+    module_instance_ports = template_kv(port_output_list)
+    ret.extend(inc_indentation(format_lines(module_instance_ports)))
+    module_instance_ports = template_kv(port_input_list)
     ret.extend(inc_indentation(format_lines(module_instance_ports)))
     ret.append([');'])
     return ret

@@ -27,7 +27,9 @@ def main2():
         ],
         'mod_ins_1',
         [
-            prolog_ast.ast_kv('clk', 'pll_0_clk', '26M clk'),
+            prolog_ast.ast_kv('clk', 'pll_0_clk', '26M clk')
+        ],
+        [
             prolog_ast.ast_kv('switch', 'pll_switchers[2:0]')
         ],
         'some comment for mod instance'
@@ -59,6 +61,7 @@ def main3():
     dat = load_yml('clk_gen.yml')
     prob = build_ast.ProbClkGen()
     prob.visit(dat)
+    pass
 
 
 if __name__ == '__main__':
