@@ -71,7 +71,7 @@ def template_port_decl(ast, direction, ty='wire', bw=1, name='noName', comment=N
 def template_local_decl(ast, ty='wire', bw=1, name='noName', comment=None):
     assert(ast == 'local_decl')
     ty = ty+' ['+str(bw-1)+':0]' if int(bw) > 1 else ty
-    return [ty, name+',', '// '+comment] if comment else [ty, name+',']
+    return [ty, name+';', '// '+comment] if comment else [ty, name+';']
 
 
 def template_module_instance(ast, ty, args, name, port_output_list, port_input_list, comment=None):
