@@ -2,7 +2,7 @@ import textwrap
 
 sep1 = '//----------------------------------------------------------------------------------------------'
 sep2 = '//=============================================================================================='
-indentation = '    '
+indentation = '   '
 
 
 def template_tostring(tpl):
@@ -26,7 +26,7 @@ def format_lines(lines):
 def inc_indentation(lines):
     def indentation_aux(line):
         if isinstance(line, str):
-            return indentation + line
+            return indentation + ' ' + line
         elif isinstance(line, list):
             return [indentation, *line]
         else:
