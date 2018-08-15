@@ -2,11 +2,11 @@ def ast_extra(*content):
     return ['extra', *content]
 
 
-def ast_port_decl(direction: str, ty='wire', bw:int=1, name: str='noName', comment=None):
+def ast_port_decl(direction, ty='wire', bw=1, name='noName', comment=None):
     return ['port_decl', direction, ty, bw, name, comment]
 
 
-def ast_local_decl(ty='wire', bw:int=1, name: str='noName', comment=None):
+def ast_local_decl(ty='wire', bw=1, name='noName', comment=None):
     return ['local_decl', ty, bw, name, comment]
 
 

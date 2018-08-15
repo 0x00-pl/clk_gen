@@ -1,8 +1,6 @@
 import yaml
-import textwrap
 
 import build_ast
-import prolog_ast
 import templates.default_templates
 
 

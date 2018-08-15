@@ -13,7 +13,7 @@ def template_tostring(tpl):
     ])
 
 
-def format_lines(lines:[list]):
+def format_lines(lines):
     max_arr = {}
     for line in lines:
         for item,i in zip(line, range(len(line))):
@@ -24,7 +24,7 @@ def format_lines(lines:[list]):
             for line in lines]
 
 
-def inc_indentation(lines:list):
+def inc_indentation(lines):
     def indentation_aux(line):
         if isinstance(line, str):
             return indentation + line
@@ -36,7 +36,7 @@ def inc_indentation(lines:list):
     return [indentation_aux(line) for line in lines]
 
 
-def template_header(env:dict):
+def template_header(env):
     description = str(env.get('Description', ''))
     description_lines = textwrap.wrap('    '+description)
     description_lines = [['//   ' + line] for line in description_lines]
@@ -62,14 +62,14 @@ def template_extra(ast, *content):
     return list(content)
 
 
-def template_port_decl(ast, direction: str, ty='wire', bw:int=1, name: str='noName', comment=None):
+def template_port_decl(ast, direction, ty='wire', bw=1, name='noName', comment=None):
     assert(ast == 'port_decl')
     ty = ty+' ['+str(bw-1)+':0]' if int(bw) > 1 else ty
     ret = [direction, ty, name+',']
     return [*ret, '// '+comment] if comment else ret
 
 
-def template_local_decl(ast, ty:str='wire', bw:int=1, name: str='noName', comment=None):
+def template_local_decl(ast, ty='wire', bw=1, name='noName', comment=None):
     assert(ast == 'local_decl')
     ty = ty+' ['+str(bw-1)+':0]' if int(bw) > 1 else ty
     return [ty, name+',', '// '+comment] if comment else [ty, name+',']
