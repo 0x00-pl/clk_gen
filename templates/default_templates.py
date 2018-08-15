@@ -124,10 +124,20 @@ def template_module(ast, name, ports, locs, module_instances, extra=None, commen
     ret.extend(inc_indentation(format_lines(module_ports)))
     ret.append([');'])
     ret.append([])
+    ret.extend(inc_indentation([
+        [sep2],
+        ['// declaration of internal wires and registers'],
+        [sep2]
+    ]))
     module_locals = [template_local_decl(*loc) for loc in locs]
     ret.extend(inc_indentation(format_lines(module_locals)))
     ret.append([])
     if len(extra) != 0:
+        ret.extend(inc_indentation([
+            [sep2],
+            ['// module main RTL code starts here!'],
+            [sep2]
+        ]))
         ret.extend(inc_indentation([template_extra(*line) for line in extra]))
         ret.append([])
 

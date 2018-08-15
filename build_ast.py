@@ -81,6 +81,12 @@ class ProbClkGen(ClkGenVisitorBase):
 
         self.fix_module_instances_output_port(name, mode, comment)
 
+    def visit_custom_code(self, custom_code):
+        for name, item in custom_code.items():
+            lines = [prolog_ast.ast_extra(line.strip()) for line in item.split('\n')]
+            self.extra.append(prolog_ast.ast_extra('// custom code:', name))
+            self.extra.extend(lines)
+
     def fix_module_instances_output_port(self, name, mode, comment):
         direction = mode.get('direction', 'node')
         name = name+'_o' if direction == 'output' else name
