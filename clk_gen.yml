@@ -1,0 +1,226 @@
+Top:
+  Module: cmu_clk_gen
+  Owner: xxxxxx@canaan-creative.com
+  Project: MAIX-2
+  Description: >
+    This is the clock signals generating module for the MAIX2 SoC.  This module
+    generates all the clocks required by all the function units, modules in This
+    SoC.
+
+Ports: 
+  - Name: cmu_rst_n
+    Comment: This is the global reset to CMU, LOW active
+    Mode: { direction: input, type: wire, width: 1 }
+  - Name: pll_0_clk
+    Comment: This is the clock generated from system PLL 0
+    Mode: { direction: input, type: wire, width: 1 }
+  - Name: pll_1_clk
+    Comment: This is the clock generated from system PLL 1
+    Mode: { direction: input, type: wire, width: 1 }
+  - Name: pll_2_clk
+    Comment: This is the clock generated from system PLL 2
+    Mode: { direction: input, type: wire, width: 1 }
+  - Name: clk_26m
+    Comment: This is the 26Mhz clock from off-chip oscilator
+    Mode: { direction: input, type: wire, width: 1 }
+  - Name: soc_sleep_flag_i
+    Comment: the flag signal that the whole SoC entering sleep Mode
+    Mode: { direction: input, type: wire, width: 1 }
+  - Name: sys_bus_aclk_en
+    Comment: the clkin enable control for sys_bus_aclk dividor Clk Cell
+    Mode: { direction: node, type: wire, width: 1 }
+
+Clock_List:
+  sys_src0_clk:
+    Comment: The SoC system source 0 clock, from clk_26m or pll_0_clk
+    Mode: { direction: node }
+    Source: [ clk_26m, pll_0_clk ]
+    ClockCell:
+      - Cell: clk2_swi
+        Param: { INIT_SEL: 1 }
+
+  sys_src1_clk:
+    Comment: The SoC system source 1 clock, from clk_26m, pll_1_clk, or pll_2_clk
+    Mode: { direction: node }
+    Source: [clk_26m, pll_1_clk, pll_2_clk]
+    ClockCell:
+      - Cell: clk3_swi
+        Param: { INIT_SEL: 2 }
+
+  sys_src2_clk:
+    Comment: The SoC system source 2 clock, from clk_26m, pll_0_clk, pll_1_clk, or pll_2_clk
+    Mode: { direction: node }
+    Source: [clk_26m, pll_0_clk, pll_1_clk, pll_2_clk, pll_3_clk]
+    ClockCell:
+      - Cell: clk4_swi
+        Param: { INIT_SEL: 3 }
+  
+  sys_bus_aclk:
+    Comment: the aclk source for function module to bus interface
+    Mode: { direction: node }
+    Source: [sys_src1_clk]
+    ClockCell:
+      - Cell: clk_div
+        Param: { STATIC: 0, CKEN: 1, DIV_BW: 3, INI_DIV: 3 }
+        Pins: { en: sys_bus_aclk_en }
+
+  sys_pclk_src:
+    Comment: the source clock for function modules APB I/F pclk
+    Mode: { direction: node }
+    Source: [sys_src0_clk]
+    ClockCell:
+      - Cell: clk_div
+        Param: { STATIC: 0, CKEN: 1, DIV_BW: 4, INI_DIV: 7 }
+      - Cell: gate_div
+        Param: { STATIC: 0, CKEN: 0, DIV_BW: 12, INI_DIV: 0x111 }
+
+  peri_mclk_src:
+    Comment: the source clock for peripheral device module clock
+    Mode: { direction: node }
+    Source: [sys_src2_clk]
+    ClockCell:
+      - Cell: clk_div
+        Param: { STATIC: 0, CKEN: 1, DIV_BW: 4, INI_DIV: 7 }
+
+  sys_dma_aclk:
+    Comment: the system DMAC master AXI interface aclk
+    Mode: { direction: output }
+    Source: [sys_bus_aclk]
+    ClockCell:
+      - Cell: gate_div
+        Param: { STATIC: 0, CKEN: 1, DIV_BW: 10, INI_DIV: 0x155 }
+
+  peri_dma_aclk:
+    Comment: the peripheral DMAC master AXI interface aclk
+    Mode: { direction: output }
+    Source: [sys_bus_aclk]
+    ClockCell:
+      - Cell: gate_div
+        Param: { STATIC: 0, CKEN: 1, DIV_BW: 10, INI_DIV: 0x155 }
+
+  ai_dma_aclk:
+    Comment: the AI module DMA master AXI interface aclk
+    Mode: { direction: output }
+    Source: [sys_bus_aclk]
+    ClockCell:
+      - Cell: gate_div
+        Param: { STATIC: 0, CKEN: 1, DIV_BW: 13, INI_DIV: 0x529 }
+
+  audio_dma_aclk:
+    Comment: the audio processing module DMA master AXI aclk
+    Mode: { direction: output }
+    Source: [sys_bus_aclk]
+    ClockCell:
+      - Cell: gate_div
+        Param: { STATIC: 0, CKEN: 1, DIV_BW: 18, INI_DIV: 0x1041 }
+
+  aes_aclk:
+    Comment: the AES module master DMA axi aclk
+    Mode: { direction: output }
+    Source: [sys_bus_aclk]
+    ClockCell:
+      - Cell: gate_div
+        Param: { STATIC: 0, CKEN: 1, DIV_BW: 16, INI_DIV: 0x1111 }
+
+  sys_dma_pclk:
+    Comment: the system DMAC slave APB interface pclk
+    Mode: { direction: output }
+    Source: [sys_pclk_src]
+    ClockCell:
+      - Cell: clk_gate
+        Param: { ASYNC: 1 }
+
+  peri_dma_pclk:
+    Comment: the peripheral DMAC slave APB interface pclk
+    Mode: { direction: output }
+    Source: [sys_pclk_src]
+    ClockCell:
+      - Cell: clk_gate
+        Param: { ASYNC: 1 }
+
+  audio_pclk:
+    Comment: the audio processing unit slave APB interface pclk
+    Mode: { direction: output }
+    Source: [sys_pclk_src]
+    ClockCell:
+      - Cell: clk_gate
+        Param: { ASYNC: 1 }
+
+  aes_pclk:
+    Comment: the AES module slave APB interface pclk
+    Mode: { direction: output }
+    Source: [sys_pclk_src]
+    ClockCell:
+      - Cell: clk_gate
+        Param: { ASYNC: 1 }
+
+  sha_pclk:
+    Comment: the SHA module slave APB interface pclk
+    Mode: { direction: output }
+    Source: [sys_pclk_src]
+    ClockCell:
+      - Cell: clk_gate
+        Param: { ASYNC: 1 }
+
+  sys_ctl_pclk:
+    Comment: the system control module slave APB interface pclk
+    Mode: { direction: output }
+    Source: [sys_pclk_src]
+    ClockCell:
+      - Cell: assign
+
+  uart_0_sclk:
+    Comment: the UART 0 host interface module serial clock
+    Mode: { direction: output }
+    Source: [peri_mclk_src]
+    ClockCell:
+      - Cell: clk_div
+        Param: { STATIC: 0, CKEN: 1, DIV_BW: 4, INI_DIV: 7 }
+        Pins: { high_th: 1 }
+      - Cell: baud_div
+        Param: { SUM_BW: 12, STEP_BW: 8, INI_SUM: 230, INI_STEP: 33 }
+
+  uart_1_sclk:
+    Comment: the UART 1 host interface module serial clock
+    Mode: { direction: output }
+    Source: [peri_mclk_src]
+    ClockCell:
+      - Cell: gate_div
+        Param: { STATIC: 0, CKEN: 1, DIV_BW: 20, INI_DIV: 0x11111 }
+      - Cell: baud_div
+        Param: { SUM_BW: 16, STEP_BW: 10, INI_SUM: 400, INI_STEP: 116 }
+
+  i2c_mclk:
+    Comment: the I2C host interface module main clock
+    Mode: { direction: output }
+    Source: [peri_mclk_src]
+    ClockCell:
+      - Cell: gate_div
+        Param: { STATIC: 0, CKEN: 1, DIV_BW: 16, INI_DIV: 0x1111 }
+      - Cell: clk_div
+        Param: { STATIC: 0, CKEN: 1, DIV_BW: 4, INI_DIV: 7 }
+
+  ssi_mclk:
+    Comment: the SSI host interface module main clock
+    Mode: { direction: output }
+    Source: [peri_mclk_src]
+    ClockCell:
+      - Cell: clk_div
+        Param: { STATIC: 0, CKEN: 1, DIV_BW: 4, INI_DIV: 7 }
+      - Cell: gate_div
+        Param: { STATIC: 0, CKEN: 0, DIV_BW: 10, INI_DIV: 0x49 }
+
+  spi_mclk:
+    Comment: the SPI host interface module main clock
+    Mode: { direction: output }
+    Source: [peri_mclk_src]
+    ClockCell:
+      - Cell: clk_div
+        Param: { STATIC: 0, CKEN: 1, DIV_BW: 2, INI_DIV: 2 }
+        Pins: { div: 2, high_th: 1, upd: 0 }
+      - Cell: clk_div
+        Param: { STATIC: 0, CKEN: 1, DIV_BW: 4, INI_DIV: 7 }
+
+Custom_Code:
+  Blk0: |
+    assign  sys_bus_aclk_en = soc_sleep_flag_i & para_sys_bus_aclk_en_i;
